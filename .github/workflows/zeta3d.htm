@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riemann Zeta Function 3D Plot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.3.0/math.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> </head>
+<body>
+    <h2>Riemann Zeta Function 3D Visualizer</h2>
+    <label for="sigmaMin">Real part (σ) Min:</label>
+    <input type="number" id="sigmaMin" value="0" step="0.1">
+    <label for="sigmaMax">Max:</label>
+    <input type="number" id="sigmaMax" value="2" step="0.1">
 
+    <label for="tMin">Imaginary part (t) Min:</label>
+    <input type="number" id="tMin" value="-10" step="0.1">
+    <label for="tMax">Max:</label>
+    <input type="number" id="tMax" value="10" step="0.1">
+
+    <button onclick="plotZeta()">Plot</button>
+    <div id="plot"></div>
+
+    <script>
+        function zeta(sigma, t) {
+            let s = math.complex(sigma, t);
+            let sum = math.complex(0, 0);
+            let N = 100; // You might need to adjust N for better accuracy
+            for (let n = 1; n <= N; n++) {
+                sum = math.add(sum, math.pow(n, math.multiply(-1, s)));
+            }
+            return sum;
+        }
+
+        function plotZeta() {
+            let sigmaMin = parseFloat(document.getElementById("sigmaMin").value);
+            let sigmaMax = parseFloat(document.getElementById("sigmaMax").value);
+            let tMin = parseFloat(document.getElementById("tMin").value);
+            let tMax = parseFloat(document.getElementById("tMax").value);
+
+            let sigmaValues = [];
+            let tValues = [];
+            let realValues = [];
+            let imagValues = [];
+            let absValues = []; // Magnitude of zeta
+
+            for (let sigma = sigmaMin; sigma <= sigmaMax; sigma += 0.1) {
+                for (let t = tMin; t <= tMax; t += 0.1) {
+                    let z = zeta(sigma, t);
+                    sigmaValues.push(sigma);
+                    tValues.push(t);
+                    realValues.push(z.re);
+                    imagValues.push(z.im);
+                    absValues.push(math.abs(z)); // Calculate magnitude
+                }
+            }
+
+            let data = [{
+                x: sigmaValues,
+                y: tValues,
+                z: absValues, // Use magnitude for the z-axis
+                mode: 'markers',
+                marker: {
+                    size: 4,
+                    color: absValues, // Color based on magnitude
+                    colorscale: 'Viridis', // Choose a colorscale
+                    opacity: 0.8
+                },
+                type: 'scatter3d'
+            }];
+
+            let layout = {
+                title: `Riemann Zeta Function |ζ(s)|`, // Title with magnitude
+                scene: {
+                    xaxis: { title: "Real Part (σ)" },
+                    yaxis: { title: "Imaginary Part (t)" },
+                    zaxis: { title: "|ζ(s)|" } // Z-axis title for magnitude
+                },
+                margin: { l: 0, r: 0, b: 0, t: 50 } // Adjust margins if needed
+
+            };
+
+            Plotly.newPlot("plot", data, layout);
+        }
+    </script>
+</body>
+</html>
